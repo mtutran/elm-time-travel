@@ -94,13 +94,28 @@ update computer mario =
       else
         min jumpCutoff gravityApplied  -- jump key released, limit speed to allow var height jumps
 
-    newX = mario.x + dt * vx
+    limit = computer.screen.width / 2
+    rawX = mario.x + dt * vx
+    
+    hitRight = rawX > limit && vx > 0
+    hitLeft = rawX < -limit && vx < 0
+
+    newX =
+      if hitRight then
+        2 * limit - rawX
+      else if hitLeft then
+        -2 * limit - rawX
+      else
+        rawX
+
+    newVx = if (hitRight || hitLeft) then -vx else vx
+
     newY = max 0 (mario.y + dt * vy)
   in
     { mario
       | x = newX
       , y = newY
-      , vx = vx
+      , vx = newVx
       , vy = (newY - mario.y) / dt
       , dir =
           if (toX computer.keyboard) < 0 then
